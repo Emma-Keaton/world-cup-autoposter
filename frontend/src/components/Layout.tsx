@@ -37,9 +37,9 @@ export default function Layout() {
         />
       )}
 
-      {/* Desktop Sidebar - overlays content, doesn't push it */}
+      {/* Desktop Sidebar - pushes content, not overlay */}
       <aside className={cn(
-        "hidden lg:flex flex-col h-full bg-slate-800 border-r border-slate-700 transition-all duration-300 shadow-xl fixed top-0 left-0 z-50",
+        "hidden lg:flex flex-col h-full bg-slate-800 border-r border-slate-700 transition-all duration-300 shadow-xl",
         sidebarCollapsed ? "w-20" : "w-64"
       )}>
         {/* Logo */}
@@ -100,7 +100,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Mobile sidebar - slides in from left */}
+      {/* Mobile sidebar - slides in from left (overlay) */}
       <aside className={cn(
         "fixed top-0 left-0 h-full bg-slate-800 border-r border-slate-700 flex flex-col z-50 transition-transform duration-300 lg:hidden w-64 shadow-xl",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -157,10 +157,10 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main content - takes full remaining space, doesn't adjust */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden w-full">
+      {/* Main content - takes remaining space (100% - sidebar width) */}
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Header - full width, centered title */}
-        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-center px-4 flex-shrink-0 w-full">
+        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-center px-4 flex-shrink-0">
           {/* Mobile menu button */}
           <div className="flex items-center gap-3 lg:hidden absolute left-4">
             <button
