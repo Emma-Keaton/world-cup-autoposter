@@ -190,11 +190,8 @@ frontend_dist_path = os.path.join(base_dir, "frontend", "dist")
 
 # Serve static assets and index.html for SPA
 if os.path.exists(frontend_dist_path):
-    # Mount static assets (JS, CSS)
+    # Mount static assets (JS, CSS, images from dist)
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
-    
-    # Serve root static files (logo, etc.)
-    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="static")
     
     # Serve index.html at root for SPA
     @app.get("/")
@@ -205,17 +202,31 @@ if os.path.exists(frontend_dist_path):
             return FileResponse(index_path)
         return {"message": "Frontend not built. Run 'npm run build' in frontend directory."}
     
+    # Serve static files from dist root (logo, etc.) via a dedicated route
+    @app.get("/logo.jpeg")
+    async def serve_logo():
+        """Serve logo from dist folder."""
+        logo_path = os.path.join(frontend_dist_path, "logo.jpeg")
+        if os.path.exists(logo_path):
+            return FileResponse(logo_path)
+        return {"error": "Logo not found"}
+    
     # Catch-all for SPA routing (serves index.html for unknown routes)
     from starlette.routing import Route
 
     def spa_fallback(request):
+        # Never catch API routes
+        path = request.url.path
+        if path.startswith("/api/") or path.startswith("/docs") or path.startswith("/redoc") or path.startswith("/openapi"):
+            return None
+        
         index_path = os.path.join(frontend_dist_path, "index.html")
         if os.path.exists(index_path):
             return FileResponse(index_path)
         return JSONResponse({"message": "Frontend not built"})
     
     # Add catch-all route at the end (after all API routes)
-    app.router.routes.append(Route("/{full_path:path}", endpoint=spa_fallback))
+    app.router.routes.append(Route("/{full_path:path}", endpoint=spa_fallback, methods=["GET"]))
 
 
 @app.get("/api")
