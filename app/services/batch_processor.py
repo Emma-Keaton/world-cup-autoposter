@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from loguru import logger
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Integer, DateTime, Enum as SQLEnum, Text
@@ -280,7 +280,7 @@ class BatchJobModel(Base):
     failed: Mapped[int] = mapped_column(Integer, default=0)
     progress_percent: Mapped[float] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(SQLEnum(BatchStatus), default=BatchStatus.PENDING)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default='now()')
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     job_metadata: Mapped[Dict] = mapped_column(String, default="{}")
 

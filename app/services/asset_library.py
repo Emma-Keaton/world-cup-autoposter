@@ -10,7 +10,7 @@ from enum import Enum
 from dataclasses import dataclass
 from loguru import logger
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Text, Integer, Boolean, DateTime, Enum as SQLEnum
@@ -258,7 +258,7 @@ class AssetModel(Base):
     asset_type: Mapped[AssetType] = mapped_column(SQLEnum(AssetType), nullable=False, index=True)
     file_path: Mapped[str] = mapped_column(String(500), nullable=False)
     file_size: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default='now()')
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     asset_metadata: Mapped[Dict] = mapped_column(String, default="{}")  # Store as JSON string
 

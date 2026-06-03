@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 from loguru import logger
 
-from sqlalchemy import select, update, insert
+from sqlalchemy import select, update, insert, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Text, Boolean, DateTime, Integer, JSON
@@ -17,9 +17,9 @@ from app.core.config import settings as env_settings
 
 class SettingModel(Base):
     """Database model for application settings."""
-    
+
     __tablename__ = "settings"
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, default="")
@@ -27,7 +27,8 @@ class SettingModel(Base):
     is_sensitive: Mapped[bool] = mapped_column(Boolean, default=False)  # Hide in UI
     category: Mapped[str] = mapped_column(String(50), default="general")
     description: Mapped[str] = mapped_column(String(500), default="")
-    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default='now()', onupdate='now')
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, server_default=text('CURRENT_TIMESTAMP'), onupdate=text('CURRENT_TIMESTAMP'))
 
 
 class SettingsService:
