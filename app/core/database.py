@@ -1,6 +1,7 @@
 """
 Database session management and base model configuration.
 Supports both PostgreSQL (with pgvector) and SQLite for development.
+Auto-initializes all tables and default settings on startup.
 """
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, declared_attr
@@ -23,7 +24,7 @@ metadata = MetaData(naming_convention={
 class Base(DeclarativeBase):
     """Base class for all models with automatic metadata naming."""
     metadata = metadata
-    
+
     @declared_attr.directive
     def __tablename__(cls) -> str:
         """Generate table name from class name (snake_case)."""
@@ -74,7 +75,13 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """Initialize database tables with all models."""
+    """Initialize database tables with all models and create default settings.
+    
+    This function:
+    1. Creates all database tables (PostgreSQL or SQLite)
+    2. Initializes default settings for web-based configuration
+    3. Runs automatically on application startup
+    """
     # Import all models to ensure they're registered with Base.metadata
     from app.models import (
         CompetitorAccount,
@@ -87,10 +94,21 @@ async def init_db() -> None:
     from app.services.asset_library import AssetModel
     from app.services.batch_processor import BatchJobModel
     from app.core.settings_service import SettingModel
+    from app.core.ab_testing import ABTestModel
     
     # Create all tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Initialize default settings after tables are created
+    try:
+        from app.core.settings_service import get_settings_service
+        settings_service = get_settings_service()
+        await settings_service.initialize()
+    except Exception as e:
+        # Log but don't fail - settings can be created on first access
+        from loguru import logger
+        logger.debug(f"Settings initialization deferred: {e}")
 
 
 async def close_db() -> None:
