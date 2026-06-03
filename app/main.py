@@ -190,43 +190,24 @@ frontend_dist_path = os.path.join(base_dir, "frontend", "dist")
 
 # Serve static assets and index.html for SPA
 if os.path.exists(frontend_dist_path):
-    # Mount static assets (JS, CSS, images from dist)
+    # Mount static assets (JS, CSS, images from dist) - this handles /assets/*
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
     
-    # Serve index.html at root for SPA
-    @app.get("/")
-    async def serve_root():
-        """Serve the frontend index.html."""
-        index_path = os.path.join(frontend_dist_path, "index.html")
-        if os.path.exists(index_path):
-            return FileResponse(index_path)
-        return {"message": "Frontend not built. Run 'npm run build' in frontend directory."}
-    
-    # Serve static files from dist root (logo, etc.) via a dedicated route
+    # Serve logo 
     @app.get("/logo.jpeg")
     async def serve_logo():
-        """Serve logo from dist folder."""
         logo_path = os.path.join(frontend_dist_path, "logo.jpeg")
         if os.path.exists(logo_path):
             return FileResponse(logo_path)
         return {"error": "Logo not found"}
     
-    # Catch-all for SPA routing (serves index.html for unknown routes)
-    from starlette.routing import Route
-
-    def spa_fallback(request):
-        # Never catch API routes
-        path = request.url.path
-        if path.startswith("/api/") or path.startswith("/docs") or path.startswith("/redoc") or path.startswith("/openapi"):
-            return None
-        
+    # Serve root index.html
+    @app.get("/")
+    async def serve_root():
         index_path = os.path.join(frontend_dist_path, "index.html")
         if os.path.exists(index_path):
             return FileResponse(index_path)
-        return JSONResponse({"message": "Frontend not built"})
-    
-    # Add catch-all route at the end (after all API routes)
-    app.router.routes.append(Route("/{full_path:path}", endpoint=spa_fallback, methods=["GET"]))
+        return {"message": "Frontend not built"}
 
 
 @app.get("/api")
