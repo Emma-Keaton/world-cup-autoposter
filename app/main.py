@@ -90,6 +90,7 @@ app = FastAPI(
     description="Autonomous football content creation system for Instagram Reels and YouTube Shorts",
     version="0.1.0",
     lifespan=lifespan,
+    redirect_slashes=False,  # Don't redirect /api/health to /api/health/
 )
 
 # CORS middleware (production-ready)
@@ -201,12 +202,12 @@ if os.path.exists(frontend_dist_path):
             return FileResponse(logo_path)
         return {"error": "Logo not found"}
     
-    # Serve root index.html
-    @app.get("/")
+    # Serve root index.html (supports GET and HEAD for health checks)
+    @app.get("/", methods=["GET", "HEAD"])
     async def serve_root():
         index_path = os.path.join(frontend_dist_path, "index.html")
         if os.path.exists(index_path):
-            return FileResponse(index_path)
+            return FileResponse(index_path, media_type="text/html")
         return {"message": "Frontend not built"}
 
 
