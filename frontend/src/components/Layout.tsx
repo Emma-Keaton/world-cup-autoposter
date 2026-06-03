@@ -6,8 +6,6 @@ import {
   Users,
   BarChart3,
   Settings,
-  Menu,
-  X,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
@@ -23,26 +21,16 @@ const navigation = [
 
 export default function Layout() {
   const location = useLocation()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const currentPage = navigation.find(n => n.to === location.pathname)?.name || 'Dashboard'
 
   return (
     <div className="min-h-screen bg-slate-900 flex overflow-hidden">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar - fixed position, overlays content */}
+      {/* Sidebar - Desktop only, collapsible */}
       <aside className={cn(
-        "fixed top-0 left-0 h-full bg-slate-800 border-r border-slate-700 flex flex-col transition-all duration-300 z-50 shadow-xl",
-        sidebarCollapsed ? "w-16" : "w-64",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        "hidden lg:flex flex-col h-full bg-slate-800 border-r border-slate-700 transition-all duration-300 shadow-xl",
+        sidebarCollapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700 flex-shrink-0">
@@ -59,20 +47,14 @@ export default function Layout() {
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 hidden lg:flex items-center justify-center ml-2"
+            className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 flex items-center justify-center flex-shrink-0"
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 lg:hidden"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
-        {/* Navigation - scrolls independently */}
+        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon
@@ -82,7 +64,6 @@ export default function Layout() {
               <Link
                 key={item.name}
                 to={item.to}
-                onClick={() => setSidebarOpen(false)}
                 className={cn(
                   'flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   sidebarCollapsed ? 'justify-center' : '',
@@ -98,7 +79,7 @@ export default function Layout() {
           })}
         </nav>
 
-        {/* Status indicator - fixed at bottom */}
+        {/* Status indicator */}
         <div className="px-3 py-4 border-t border-slate-700 flex-shrink-0">
           <div className={cn("flex items-center text-xs text-slate-400", sidebarCollapsed ? "justify-center" : "")}>
             <span className="flex items-center">
@@ -109,24 +90,22 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main content - full width */}
+      {/* Main content */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Header - full width, centered title */}
-        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-center px-4 lg:px-6 flex-shrink-0 w-full">
+        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-center px-4 flex-shrink-0 w-full">
+          {/* Mobile menu button - only visible on small screens */}
           <div className="flex items-center gap-3 lg:hidden absolute left-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-slate-700 text-slate-400"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+            <a href="/" className="flex items-center gap-2">
+              <img src="/logo.jpeg" alt="Logo" className="w-8 h-8 object-cover rounded-lg" />
+            </a>
           </div>
           <h1 className="text-lg lg:text-xl font-semibold text-white text-center">
             {currentPage}
           </h1>
         </header>
 
-        {/* Page content - scrolls independently */}
+        {/* Page content */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
         </div>
