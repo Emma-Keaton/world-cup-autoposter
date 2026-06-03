@@ -178,6 +178,7 @@ app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(system_info.router, prefix="/api/system", tags=["System"])
 app.include_router(ab_testing.router, prefix="/api/ab-testing", tags=["A/B Testing"])
 
+
 # Serve static frontend files from dist folder
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -187,34 +188,31 @@ import os
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 frontend_dist_path = os.path.join(base_dir, "frontend", "dist")
 
-def setup_frontend_serving(app):
-    """Configure frontend and static file serving."""
-    if os.path.exists(frontend_dist_path):
-        # Serve static assets (JS, CSS, images) from dist folder
-        app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
-        
-        @app.get("/{full_path:path}")
-        async def serve_frontend(path: str, full_path: str):
-            """Serve frontend routes - return index.html for non-API paths."""
-            # Don't interfere with API routes
-            if full_path.startswith("api/") or full_path in ["docs", "redoc", "openapi.json"]:
-                return
-            
-            # Skip if path starts with common non-frontend paths
-            if full_path in ["assets", "static", "dist"]:
-                return
-            
-            # Try to serve file from dist if it exists
-            file_path = os.path.join(frontend_dist_path, full_path)
-            if os.path.isfile(file_path):
-                return FileResponse(file_path)
-            
-            # Otherwise serve index.html (for SPA routing)
-            index_path = os.path.join(frontend_dist_path, "index.html")
-            if os.path.exists(index_path):
-                return FileResponse(index_path)
+# Serve static assets and index.html for SPA
+if os.path.exists(frontend_dist_path):
+    # Mount static assets
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
+    
+    # Serve index.html at root
+    @app.get("/")
+    async def serve_root():
+        """Serve the frontend index.html."""
+        index_path = os.path.join(frontend_dist_path, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        return {"message": "Frontend not built. Run 'npm run build' in frontend directory."}
+    
+    # Catch-all for SPA routing (serves index.html for unknown routes)
+    from starlette.routing import Route, Mount
 
-setup_frontend_serving(app)
+    def spa_fallback(request):
+        index_path = os.path.join(frontend_dist_path, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        return JSONResponse({"message": "Frontend not built"})
+    
+    # Add catch-all route at the end (after all API routes)
+    app.router.routes.append(Route("/{full_path:path}", endpoint=spa_fallback))
 
 
 @app.get("/api")
