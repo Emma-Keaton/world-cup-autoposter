@@ -29,7 +29,7 @@ export default function Layout() {
   const currentPage = navigation.find(n => n.to === location.pathname)?.name || 'Dashboard'
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen bg-slate-900 flex overflow-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
@@ -38,18 +38,18 @@ export default function Layout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - fixed position, overlays content */}
       <aside className={cn(
-        "fixed lg:static top-0 left-0 h-full bg-slate-800 border-r border-slate-700 flex flex-col transition-all duration-300 z-50",
+        "fixed top-0 left-0 h-full bg-slate-800 border-r border-slate-700 flex flex-col transition-all duration-300 z-50 shadow-xl",
         sidebarCollapsed ? "w-16" : "w-64",
         sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700 flex-shrink-0">
           {!sidebarCollapsed && (
-            <div className="flex items-center">
-              <img src="/logo.jpeg" alt="Logo" className="w-8 h-8 object-cover rounded-lg" />
-              <span className="ml-3 text-sm font-bold text-white whitespace-nowrap">
+            <div className="flex items-center flex-1 min-w-0">
+              <img src="/logo.jpeg" alt="Logo" className="w-8 h-8 object-cover rounded-lg flex-shrink-0" />
+              <span className="ml-3 text-sm font-bold text-white whitespace-nowrap truncate">
                 World Cup Autoposter
               </span>
             </div>
@@ -59,19 +59,20 @@ export default function Layout() {
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hidden lg:flex"
+            className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 hidden lg:flex items-center justify-center ml-2"
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 lg:hidden"
+            className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 lg:hidden"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation - sticky scrollable area */}
+        {/* Navigation - scrolls independently */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon
@@ -90,7 +91,7 @@ export default function Layout() {
                     : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                 )}
               >
-                <Icon className={cn("w-5 h-5", sidebarCollapsed ? '' : 'mr-3')} />
+                <Icon className={cn("w-5 h-5 flex-shrink-0", sidebarCollapsed ? '' : 'mr-3')} />
                 {!sidebarCollapsed && <span className="truncate">{item.name}</span>}
               </Link>
             )
@@ -98,35 +99,35 @@ export default function Layout() {
         </nav>
 
         {/* Status indicator - fixed at bottom */}
-        <div className="px-3 py-4 border-t border-slate-700 mt-auto">
+        <div className="px-3 py-4 border-t border-slate-700 flex-shrink-0">
           <div className={cn("flex items-center text-xs text-slate-400", sidebarCollapsed ? "justify-center" : "")}>
             <span className="flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+              <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse flex-shrink-0"></span>
               {!sidebarCollapsed && "Online"}
             </span>
           </div>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
-          <div className="flex items-center gap-3">
+      {/* Main content - full width */}
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* Header - full width, centered title */}
+        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-center px-4 lg:px-6 flex-shrink-0 w-full">
+          <div className="flex items-center gap-3 lg:hidden absolute left-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 lg:hidden"
+              className="p-2 rounded-lg hover:bg-slate-700 text-slate-400"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-lg lg:text-xl font-semibold text-white truncate">
-              {currentPage}
-            </h1>
           </div>
+          <h1 className="text-lg lg:text-xl font-semibold text-white text-center">
+            {currentPage}
+          </h1>
         </header>
 
-        {/* Page content */}
-        <div className="p-4 lg:p-6 overflow-auto flex-1">
+        {/* Page content - scrolls independently */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
         </div>
       </main>
