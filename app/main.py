@@ -190,10 +190,13 @@ frontend_dist_path = os.path.join(base_dir, "frontend", "dist")
 
 # Serve static assets and index.html for SPA
 if os.path.exists(frontend_dist_path):
-    # Mount static assets
+    # Mount static assets (JS, CSS)
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
     
-    # Serve index.html at root
+    # Serve root static files (logo, etc.)
+    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="static")
+    
+    # Serve index.html at root for SPA
     @app.get("/")
     async def serve_root():
         """Serve the frontend index.html."""
@@ -203,7 +206,7 @@ if os.path.exists(frontend_dist_path):
         return {"message": "Frontend not built. Run 'npm run build' in frontend directory."}
     
     # Catch-all for SPA routing (serves index.html for unknown routes)
-    from starlette.routing import Route, Mount
+    from starlette.routing import Route
 
     def spa_fallback(request):
         index_path = os.path.join(frontend_dist_path, "index.html")

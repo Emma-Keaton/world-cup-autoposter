@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { settingsApi } from '@/lib/api'
-import { RotateCcw, Check, Key, Bell, Palette, Cpu, Globe } from 'lucide-react'
+import { RotateCcw, Check, Key, Bell, Palette, Cpu, Globe, Server } from 'lucide-react'
 
 interface Setting {
   value: any
@@ -14,6 +14,15 @@ interface Setting {
 interface SettingsData {
   [key: string]: Setting
 }
+
+// Settings configured via environment variables (hidden from UI)
+const ENV_CONFIGURED_SETTINGS = [
+  'nvidia_api_key',
+  'nvidia_api_base_url',
+  'app_env',
+  'debug_mode',
+  'log_level',
+]
 
 export default function Settings() {
   const [editedValues, setEditedValues] = useState<Record<string, any>>({})
@@ -69,10 +78,13 @@ export default function Settings() {
 
   const getFilteredSettings = () => {
     if (!settingsData) return {}
-    if (activeCategory === 'all') return settingsData
-    
+
     return Object.fromEntries(
-      Object.entries(settingsData).filter(([_, setting]) => setting.category === activeCategory)
+      Object.entries(settingsData).filter(([key, _]) => {
+        // Hide environment-configured settings
+        if (ENV_CONFIGURED_SETTINGS.includes(key)) return false
+        return true
+      })
     )
   }
 
@@ -173,6 +185,18 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Environment Config Notice */}
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-start gap-3">
+        <Server className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <div>
+          <h4 className="text-white font-medium text-sm">Environment-Configured Settings</h4>
+          <p className="text-slate-400 text-sm mt-1">
+            The following settings are configured via environment variables and cannot be changed here: 
+            <span className="text-slate-300 font-medium"> NVIDIA API Key, NVIDIA API Base URL, App Environment, Debug Mode, Log Level</span>
+          </p>
+        </div>
+      </div>
+
       {/* Category Tabs */}
       <div className="flex gap-2 flex-wrap">
         {getCategories().map(category => (
@@ -228,7 +252,7 @@ export default function Settings() {
                   )}
                 </div>
               </div>
-              <div className="w-80">
+              <div className="w-80 max-w-full">
                 {renderInput(key, setting)}
               </div>
             </div>
