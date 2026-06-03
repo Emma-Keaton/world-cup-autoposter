@@ -202,8 +202,8 @@ if os.path.exists(frontend_dist_path):
             return FileResponse(logo_path)
         return {"error": "Logo not found"}
     
-    # Serve root index.html (supports GET and HEAD for health checks)
-    @app.get("/", methods=["GET", "HEAD"])
+    # Serve root index.html (HEAD is automatically supported for GET endpoints)
+    @app.get("/")
     async def serve_root():
         index_path = os.path.join(frontend_dist_path, "index.html")
         if os.path.exists(index_path):
