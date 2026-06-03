@@ -178,34 +178,50 @@ app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(system_info.router, prefix="/api/system", tags=["System"])
 app.include_router(ab_testing.router, prefix="/api/ab-testing", tags=["A/B Testing"])
 
-# Serve static frontend files
+# Serve static frontend files from dist folder
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import os
 
-frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
-if os.path.exists(frontend_path):
-    app.mount("/frontend", StaticFiles(directory=frontend_path), name="frontend")
+# Get the frontend directory path (works for both local dev and Render deployment)
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+frontend_dist_path = os.path.join(base_dir, "frontend", "dist")
+
+# Check if dist folder exists (production build)
+if os.path.exists(frontend_dist_path):
+    # Mount the dist folder at /frontend
+    app.mount("/frontend", StaticFiles(directory=frontend_dist_path), name="frontend")
+
+# Fallback to source directory if dist doesn't exist (development)
+frontend_source_path = os.path.join(base_dir, "frontend")
+if frontend_source_path != frontend_dist_path and os.path.exists(frontend_source_path):
+    app.mount("/frontend-source", StaticFiles(directory=frontend_source_path), name="frontend_source")
 
 # Serve settings page at root level
-from fastapi.responses import FileResponse
-
 @app.get("/settings.html")
 async def serve_settings_page():
     """Serve the settings HTML page."""
-    settings_path = os.path.join(frontend_path, "settings.html")
+    settings_path = os.path.join(frontend_dist_path, "index.html")
     if os.path.exists(settings_path):
         return FileResponse(settings_path)
     return {"error": "Settings page not found"}
 
 
-# Root endpoint
+# Root endpoint - serve frontend
 @app.get("/")
 async def root():
-    """API root - health check."""
+    """Serve the frontend application."""
+    # Try to serve the frontend index.html
+    index_path = os.path.join(frontend_dist_path, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
+    # Fallback to API info if frontend not built
     return {
         "name": "World Cup Autoposter API",
         "version": "0.1.0",
         "status": "running",
+        "frontend": "Build 'dist' folder not found - run 'npm run build' in frontend directory",
     }
 
 
