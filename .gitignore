@@ -8,6 +8,10 @@ postgres-data/
 # AI Assistant Caches
 .qwen/
 
+# Generated/Cached Assets
+scope/
+assets/
+
 # Python
 __pycache__/
 *.py[cod]
