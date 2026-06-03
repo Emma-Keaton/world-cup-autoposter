@@ -193,17 +193,18 @@ frontend_dist_path = os.path.join(base_dir, "frontend", "dist")
 if os.path.exists(frontend_dist_path):
     # Mount static assets (JS, CSS, images from dist) - this handles /assets/*
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
-    
-    # Serve logo 
+
+    # Serve logo
     @app.get("/logo.jpeg")
     async def serve_logo():
         logo_path = os.path.join(frontend_dist_path, "logo.jpeg")
         if os.path.exists(logo_path):
             return FileResponse(logo_path)
         return {"error": "Logo not found"}
-    
-    # Serve root index.html (HEAD is automatically supported for GET endpoints)
+
+    # Serve root index.html
     @app.get("/")
+    @app.head("/")  # Support HEAD requests for health checks
     async def serve_root():
         index_path = os.path.join(frontend_dist_path, "index.html")
         if os.path.exists(index_path):
