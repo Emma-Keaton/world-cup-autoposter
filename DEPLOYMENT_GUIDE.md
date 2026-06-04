@@ -146,8 +146,9 @@ Root Directory: (leave blank)
 Runtime: Python 3
 Build Command: pip install -e . && cd frontend && npm install && npm run build
 Start Command: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
-Pre-Deploy Command: python scripts/init_database.py
 ```
+
+**Note:** Database initializes automatically on startup - no pre-deploy command needed!
 
 #### 5. Environment Variables
 Add these in Render dashboard → Environment:
@@ -278,10 +279,12 @@ python scripts/init_database.py
 You're using SQLite. Migrate to PostgreSQL (see "Migrating from SQLite to PostgreSQL" above).
 
 ### "Pre-deploy command failed"
-The `init_database.py` script runs before each deploy. If it fails:
-1. Check logs in Render dashboard
-2. Verify DATABASE_URL is correct
-3. Ensure PostgreSQL database exists
+Not using pre-deploy commands (free tier)? No problem! Database initializes automatically on app startup.
+
+If you see database errors:
+1. Check DATABASE_URL is correct
+2. Ensure PostgreSQL database exists
+3. Check logs - initialization happens in first 10 seconds of startup
 
 ### "Settings page empty"
 Run initialization manually via Render shell:
