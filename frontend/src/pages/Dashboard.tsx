@@ -113,13 +113,8 @@ export default function Dashboard() {
 
       {/* System status */}
       <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-        <h2 className="text-lg font-semibold text-white mb-4">System Status</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">Configuration Status</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <StatusItem
-            label="Database"
-            status={health?.database?.status === 'connected' ? 'Connected' : 'Disconnected'}
-            active={health?.database?.status === 'connected'}
-          />
           <StatusItem
             label="NVIDIA API"
             status={health?.configuration?.nvidia_api ? 'Configured' : 'Not Configured'}
@@ -136,9 +131,29 @@ export default function Dashboard() {
             active={health?.configuration?.pixabay_api}
           />
           <StatusItem
+            label="Buffer API"
+            status={health?.configuration?.buffer_api ? 'Configured' : 'Not Configured'}
+            active={health?.configuration?.buffer_api}
+          />
+          <StatusItem
             label="Meta API"
             status={health?.configuration?.meta_api ? 'Configured' : 'Not Configured'}
             active={health?.configuration?.meta_api}
+          />
+          <StatusItem
+            label="YouTube API"
+            status={health?.configuration?.youtube_api ? 'Configured' : 'Not Configured'}
+            active={health?.configuration?.youtube_api}
+          />
+          <StatusItem
+            label="YouTube Channel"
+            status={health?.configuration?.youtube_channel ? 'Configured' : 'Not Configured'}
+            active={health?.configuration?.youtube_channel}
+          />
+          <StatusItem
+            label="Instagram Account"
+            status={health?.configuration?.instagram_account ? 'Configured' : 'Not Configured'}
+            active={health?.configuration?.instagram_account}
           />
         </div>
       </div>
