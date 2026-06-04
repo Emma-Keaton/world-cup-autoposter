@@ -1,10 +1,43 @@
-# 🚀 FREE DEPLOYMENT GUIDE
+# 🚀 DEPLOYMENT GUIDE
 
-**Deploy your World Cup Autoposter for FREE and access from phone + laptop**
+**Deploy your World Cup Autoposter and persist data across deployments**
 
 ---
 
-## 🎯 Complete Installation & Deployment
+## 🎯 Quick Start
+
+### For Production Deployment (Render with PostgreSQL):
+
+1. **Add PostgreSQL dependency** (already included):
+   ```bash
+   pip install asyncpg  # PostgreSQL support
+   ```
+
+2. **Create Render PostgreSQL Database**:
+   - Go to Render Dashboard → New → PostgreSQL
+   - Choose free tier (500MB)
+   - Note the connection string
+
+3. **Set Environment Variables** in Render:
+   ```
+   NVIDIA_API_KEY=nvapi-your-key-here
+   APP_ENV=production
+   DEBUG=false
+   DATABASE_URL=postgresql://user:pass@host:5432/dbname  # From Render PostgreSQL
+   ```
+
+4. **Update Build/Start Commands**:
+   ```
+   Build: pip install -e . && cd frontend && npm install && npm run build
+   Start: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+   Pre-Deploy: python scripts/init_database.py
+   ```
+
+5. **Deploy** - Your data will now persist forever! ✅
+
+---
+
+## 📋 Complete Installation & Deployment
 
 ### Step 1: Install Backend
 
@@ -51,130 +84,143 @@ curl http://localhost:8000/api/system/features
 
 ---
 
-## 🌐 FREE DEPLOYMENT OPTIONS
+## 🌐 DEPLOYMENT TO RENDER (Recommended)
 
-### Option 1: Render.com (RECOMMENDED - Easiest)
+### Why PostgreSQL over SQLite?
 
-**Why Render:**
-- ✅ FREE tier: 750 hours/month (enough for 24/7)
-- ✅ Auto-deploy from GitHub
-- ✅ PostgreSQL database included
-- ✅ No credit card required
-- ✅ HTTPS automatically
+| Feature | SQLite | PostgreSQL |
+|---------|--------|------------|
+| **Persistence** | ❌ Lost on redeploy | ✅ Permanent |
+| **Backups** | ❌ Manual | ✅ Automatic |
+| **Performance** | OK for dev | ✅ Production-ready |
+| **Scalability** | Limited | ✅ Unlimited |
+| **Cost** | Free | Free tier (500MB) |
 
-#### Steps:
-
-1. **Prepare Repository**
-   ```bash
-   # Create .gitignore if not exists
-   echo ".env
-   *.db
-   __pycache__/
-   node_modules/
-   frontend/dist/
-   *.pyc" > .gitignore
-
-   # Commit to GitHub
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin YOUR_GITHUB_REPO
-   git push -u origin main
-   ```
-
-2. **Create Render Account**
-   - Go to https://render.com
-   - Sign up with GitHub (recommended) or email
-   - No credit card needed
-
-3. **Create Web Service**
-   - Click "New +" → "Web Service"
-   - Connect your GitHub repository
-   - Configure:
-     ```
-     Name: world-cup-autoposter
-     Region: Choose closest to you
-     Branch: main
-     Root Directory: (leave blank)
-     Runtime: Python 3
-     Build Command: pip install -e . && cd frontend && npm install && npm run build
-     Start Command: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
-     ```
-
-4. **Environment Variables**
-   Add these in Render dashboard → Environment:
-   ```
-   NVIDIA_API_KEY=nvapi-your-key-here
-   APP_ENV=production
-   DEBUG=false
-   DATABASE_URL=sqlite+aiosqlite:///./world_cup_autoposter.db
-   PORT=10000
-   ```
-
-5. **Database Setup**
-   - For SQLite (FREE, simple): Use default config above
-   - For PostgreSQL (better): 
-     - Click "New +" → "PostgreSQL"
-     - Create free database
-     - Copy connection string to `DATABASE_URL`
-
-6. **Deploy**
-   - Click "Create Web Service"
-   - Wait 5-10 minutes for first deploy
-   - Your URL: `https://world-cup-autoposter-xxxx.onrender.com`
-
-**⚠️ Render Free Tier Notes:**
-- Web service spins down after 15 minutes of inactivity
-- First request after spin-down takes ~30 seconds to wake up
-- To keep alive 24/7: Use uptime monitoring (below)
+**Recommendation:** Use PostgreSQL for production (your data persists forever).
 
 ---
 
-### Option 2: Railway.app
+### Step-by-Step: Render + PostgreSQL
 
-**Why Railway:**
-- ✅ FREE $5/month credit (enough for small app)
-- ✅ Better performance than Render
-- ✅ One-click deploy
+#### 1. Prepare Repository
+```bash
+# Ensure .gitignore exists
+echo ".env
+*.db
+__pycache__/
+node_modules/
+frontend/dist/
+*.pyc" > .gitignore
 
-#### Steps:
-
-1. Go to https://railway.app
-2. Sign in with GitHub
-3. Click "New Project" → "Deploy from GitHub repo"
-4. Select your repository
-5. Railway auto-detects Python + Node
-6. Add environment variables (same as Render)
-7. Deploy!
-
-**URL:** `https://your-app.up.railway.app`
-
----
-
-### Option 3: Vercel (Frontend) + Render (Backend)
-
-**Why Vercel:**
-- ✅ Best for React/Vite frontends
-- ✅ Faster load times
-- ✅ Unlimited bandwidth on free tier
-
-#### Deploy Frontend on Vercel:
-
-1. Go to https://vercel.com
-2. Import GitHub repository
-3. Framework Preset: Vite
-4. Root Directory: `frontend`
-5. Build Command: `npm run build`
-6. Output Directory: `dist`
-7. Add environment variable: `VITE_API_URL=https://your-backend.onrender.com`
-8. Deploy
-
-#### Update Frontend API URL:
-In `frontend/src/lib/api.ts`:
-```typescript
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+# Commit to GitHub
+git add .
+git commit -m "Ready for deployment"
+git push
 ```
+
+#### 2. Create Render Account
+- Go to https://render.com
+- Sign up with GitHub (recommended)
+- No credit card needed
+
+#### 3. Create PostgreSQL Database
+1. Click "New +" → "PostgreSQL"
+2. Choose database name: `world-cup-autoposter-db`
+3. Choose region (closest to you)
+4. Click "Create database"
+5. **Copy the Internal Database URL** (looks like):
+   ```
+   postgresql://user:password@host.amazonaws.com:5432/dbname
+   ```
+
+#### 4. Create Web Service
+1. Click "New +" → "Web Service"
+2. Connect your GitHub repository
+3. Configure:
+
+```yaml
+Name: world-cup-autoposter
+Region: Choose closest to you
+Branch: main
+Root Directory: (leave blank)
+Runtime: Python 3
+Build Command: pip install -e . && cd frontend && npm install && npm run build
+Start Command: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Pre-Deploy Command: python scripts/init_database.py
+```
+
+#### 5. Environment Variables
+Add these in Render dashboard → Environment:
+
+```
+# Required
+NVIDIA_API_KEY=nvapi-your-key-here
+DATABASE_URL=postgresql://user:pass@host:5432/dbname  # From step 3
+
+# Optional (but recommended)
+APP_ENV=production
+DEBUG=false
+```
+
+#### 6. Deploy
+- Click "Create Web Service"
+- Wait 5-10 minutes for first deploy
+- Your URL: `https://world-cup-autoposter-xxxx.onrender.com`
+
+---
+
+### Step-by-Step: Render + SQLite (Simpler but data may be lost)
+
+If you want to start simple and upgrade later:
+
+#### 1-4. Same as PostgreSQL steps above
+
+#### 5. Environment Variables (SQLite)
+```
+NVIDIA_API_KEY=nvapi-your-key-here
+DATABASE_URL=sqlite+aiosqlite:///./world_cup_autoposter.db
+APP_ENV=production
+DEBUG=false
+```
+
+**⚠️ Warning:** SQLite file may be wiped on redeploy. For permanent data, use PostgreSQL.
+
+---
+
+## 🔄 Migrating from SQLite to PostgreSQL
+
+If you deployed with SQLite and want to migrate:
+
+### 1. Create PostgreSQL Database
+Follow step 3 above to create Render PostgreSQL.
+
+### 2. Export SQLite Data (Optional)
+```bash
+# Install SQLite browser or use Python script
+python -c "
+import sqlite3
+import json
+
+conn = sqlite3.connect('world_cup_autoposter.db')
+cursor = conn.cursor()
+
+# Export settings
+cursor.execute('SELECT key, value FROM settings')
+settings = cursor.fetchall()
+print(json.dumps(settings, indent=2))
+
+conn.close()
+"
+```
+
+### 3. Update DATABASE_URL
+In Render dashboard, change `DATABASE_URL` to PostgreSQL connection string.
+
+### 4. Redeploy
+Render will auto-redeploy. The `init_database.py` script will create all tables.
+
+### 5. Re-enter Settings
+Go to `/settings` page and re-enter your API keys (they'll now persist forever).
 
 ---
 
@@ -184,7 +230,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 1. **Get Your URL**
    - Render: `https://world-cup-autoposter-xxxx.onrender.com`
-   - Railway: `https://your-app.up.railway.app`
 
 2. **Open on Any Device**
    - Phone: Open browser → your URL
@@ -197,47 +242,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 4. **Configure API Keys**
    - Go to `/settings` page
-   - Add NVIDIA API key
-   - Add WhatsApp number (optional)
+   - Add NVIDIA API key (if not set via env var)
+   - Add other API keys as needed
    - Save
-
-5. **Keep Alive (Optional)**
-   Use free uptime monitoring:
-   - https://uptimerobot.com
-   - Ping your URL every 5 minutes
-   - Prevents Render spin-down
-
----
-
-## 🔧 Post-Deployment Setup
-
-### 1. Set NVIDIA API Key
-```bash
-# Via settings page (recommended)
-Open: https://your-app.com/settings
-Add NVIDIA API key
-Save
-
-# Or via environment variable (Render dashboard)
-NVIDIA_API_KEY=nvapi-your-key
-```
-
-### 2. Test WhatsApp (Optional)
-```bash
-curl -X POST https://your-app.com/api/notifications/test/whatsapp
-```
-
-### 3. Create First Content
-```bash
-curl -X POST https://your-app.com/api/content/generate \
-  -H "Content-Type: application/json" \
-  -d '{"topic": "World Cup highlights"}'
-```
-
-### 4. Monitor Logs
-- Render: Dashboard → Logs
-- Railway: Dashboard → Logs
-- Check for errors
 
 ---
 
@@ -245,86 +252,77 @@ curl -X POST https://your-app.com/api/content/generate \
 
 | Service | Free Tier | What You Get |
 |---------|-----------|--------------|
-| **Render** | 750 hrs/month | Web service + PostgreSQL (500MB) |
-| **Railway** | $5 credit | ~500 hours of usage |
-| **Vercel** | Unlimited | Frontend hosting + CDN |
-| **UptimeRobot** | Free | 50 monitors, 5-min checks |
+| **Render Web Service** | 750 hrs/month | ~24/7 hosting |
+| **Render PostgreSQL** | 500MB | Permanent database |
+| **UptimeRobot** | Free | Keep-alive pings |
 
 **Total Monthly Cost: $0** 🎉
 
+**Note:** Render's free tier may require upgrading for heavy usage. PostgreSQL free tier is sufficient for thousands of settings and content briefs.
+
 ---
 
-## 🐛 Troubleshooting
+## 🔧 Troubleshooting
 
-### "App won't start"
-Check logs in Render/Railway dashboard:
+### "Database errors on startup"
 ```bash
-# Common issues:
-- Missing NVIDIA_API_KEY → Add in environment
-- Database error → Check DATABASE_URL
-- Port error → Use $PORT environment variable
+# Check DATABASE_URL format:
+# SQLite: sqlite+aiosqlite:///./world_cup_autoposter.db
+# PostgreSQL: postgresql://user:pass@host:5432/dbname
+
+# Manually initialize:
+python scripts/init_database.py
 ```
 
-### "Frontend can't connect to backend"
-Set API URL in frontend:
-```typescript
-// frontend/src/lib/api.ts
-const API_BASE_URL = 'https://your-backend.onrender.com'
+### "Data lost after deploy"
+You're using SQLite. Migrate to PostgreSQL (see "Migrating from SQLite to PostgreSQL" above).
+
+### "Pre-deploy command failed"
+The `init_database.py` script runs before each deploy. If it fails:
+1. Check logs in Render dashboard
+2. Verify DATABASE_URL is correct
+3. Ensure PostgreSQL database exists
+
+### "Settings page empty"
+Run initialization manually via Render shell:
+```bash
+python scripts/init_database.py
 ```
 
-Re-deploy frontend after change.
-
-### "Database errors"
-For Render PostgreSQL:
-1. Create new PostgreSQL database
-2. Copy connection string
-3. Update `DATABASE_URL` environment variable
-4. Redeploy
-
-### "502 Bad Gateway"
-- App is still starting (wait 2-3 minutes)
-- Check logs for startup errors
-- Verify start command: `python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-
-### "Settings page shows 0 settings"
-Initialize database manually:
+Or in Python shell:
 ```python
-# In Render/Railway shell
-python -c "
 import asyncio
 from app.core.database import init_db
-from app.core.settings_service import get_settings_service
 
-async def setup():
-    await init_db()
-    service = get_settings_service()
-    await service.initialize()
-    print('✅ Initialized')
-
-asyncio.run(setup())
-"
+asyncio.run(init_db())
 ```
+
+### "PostgreSQL connection timeout"
+- Verify DATABASE_URL is correct (copy from Render PostgreSQL dashboard)
+- Ensure web service and database are in same region
+- Check Render dashboard for database health
 
 ---
 
-## ✅ Final Checklist
+## ✅ Post-Deployment Checklist
 
-- [ ] Backend deployed and responding
-- [ ] Frontend deployed and accessible
-- [ ] NVIDIA API key configured
-- [ ] Database initialized
+- [ ] PostgreSQL database created and connected
+- [ ] DATABASE_URL environment variable set
+- [ ] NVIDIA_API_KEY configured (env var or settings page)
+- [ ] Pre-deploy command runs successfully
+- [ ] Settings page shows all configuration options
+- [ ] Dashboard shows APIs as "Configured"
 - [ ] Can access from phone
 - [ ] Can access from laptop
-- [ ] Settings page working
-- [ ] Can generate content
-- [ ] WhatsApp notifications tested (optional)
+- [ ] Data persists after redeploy
 
 ---
 
 ## 🎉 Success!
 
 Your World Cup Autoposter is now:
-- ✅ Running in the cloud (FREE)
+- ✅ Running in the cloud
+- ✅ Data persists across deployments (PostgreSQL)
 - ✅ Accessible from any device
 - ✅ Auto-deploying on git push
 - ✅ 100% feature complete
@@ -333,13 +331,13 @@ Your World Cup Autoposter is now:
 1. Add competitors to monitor
 2. Generate your first content
 3. Configure auto-posting (optional)
-4. Set up WhatsApp alerts
+4. Set up WhatsApp notifications
 
 **Your deployed URL:** `https://your-app.onrender.com`
 
 ---
 
 **Need Help?**
-- Check logs in Render/Railway dashboard
+- Check logs in Render dashboard
 - Review API docs: `https://your-app.com/docs`
-- Test endpoints: `https://your-app.com/api/health`
+- Test health: `https://your-app.com/api/health/status`

@@ -14,7 +14,8 @@ dependencies = [
     # Database
     "sqlalchemy>=2.0.25",
     "alembic>=1.13.1",
-    "aiosqlite>=0.19.0",
+    "aiosqlite>=0.19.0",  # SQLite support (development)
+    "asyncpg>=0.29.0",  # PostgreSQL support (production - Render)
 
     # LLM & AI
     "requests>=2.31.0",
