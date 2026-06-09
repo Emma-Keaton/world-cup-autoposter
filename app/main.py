@@ -25,6 +25,7 @@ from app.api import (
     settings,
     system_info,
     ab_testing,
+    pipeline,
 )
 from app.services.error_notifier import get_error_notifier, ErrorSeverity, notify_error
 from app.core.auth import setup_authentication
@@ -178,6 +179,7 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["Not
 app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(system_info.router, prefix="/api/system", tags=["System"])
 app.include_router(ab_testing.router, prefix="/api/ab-testing", tags=["A/B Testing"])
+app.include_router(pipeline.router, prefix="/api/pipeline", tags=["Pipeline Automation"])
 
 
 # Serve static frontend files from dist folder

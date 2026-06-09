@@ -32,7 +32,13 @@ dependencies = [
     # Audio & TTS (FREE - zero cost)
     "edge-tts>=6.1.15",
     "faster-whisper>=1.0.0",
-    "librosa>=0.10.0",  # Optional: For audio peak detection in clips
+    "librosa>=0.10.0",  # Audio analysis, fingerprinting
+
+    # RSS Feed Parsing (competitor monitoring)
+    "feedparser>=6.0.10",
+
+    # Image hashing for copyright detection
+    "imagehash>=4.3.1",
 
     # Utilities
     "python-dotenv>=1.0.0",
